@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Yt2s Core
  * Description: Handles downloader requests directly in WordPress using PHP cron processing.
- * Version: 0.2.0
+ * Version: 0.2.1
  * Author: Copilot
  */
 
@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('YT2S_CORE_VERSION', '0.2.0');
+define('YT2S_CORE_VERSION', '0.2.1');
 define('YT2S_CORE_FILE', __FILE__);
 define('YT2S_CORE_PATH', plugin_dir_path(__FILE__));
 define('YT2S_CORE_URL', plugin_dir_url(__FILE__));

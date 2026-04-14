@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: yt2s-engine
+    runtime: python
+    startCommand: python engine-standalone.py
+    buildCommand: pip install -r requirements.txt
+    plan: free
+    
+    envVars:
+      - key: ENGINE_HOST
+        value: 0.0.0.0
+      - key: ENGINE_PORT
+        value: 8000
+      - key: YT2S_API_KEY
+        sync: false  # User must set this manually (should be secret)
+      - key: ALLOWED_VIDEO_URLS
+        value: "youtube.com,vimeo.com,dailymotion.com"

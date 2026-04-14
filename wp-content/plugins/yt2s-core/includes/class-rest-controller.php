@@ -359,10 +359,34 @@ final class YT2S_Rest_Controller {
         $filename = 'yt2s-' . $safe_job_id . '-' . gmdate('Ymd-His') . '.' . $ext;
         $path = trailingslashit($dir) . $filename;
 
-        $bytes = file_put_contents($path, self::build_binary_artifact($job_id, $job, $ext), LOCK_EX);
+        $source_url = (string) ($job['source_url'] ?? '');
 
-        if (false === $bytes || 0 === $bytes) {
-            return new WP_Error('yt2s_artifact_write', 'Unable to write artifact file to uploads.');
+        if (!self::is_direct_media_url($source_url)) {
+            return new WP_Error(
+                'yt2s_artifact_source_type',
+                'This hosting mode supports direct media file links only (for example .mp4 or .mp3). Page URLs like video watch pages cannot be processed on shared hosting without external tools.'
+            );
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        $tmp_file = download_url($source_url, 90);
+
+        if (is_wp_error($tmp_file)) {
+            return new WP_Error('yt2s_artifact_download', 'Unable to download source media: ' . $tmp_file->get_error_message());
+        }
+
+        $copied = @copy($tmp_file, $path);
+        @unlink($tmp_file);
+
+        if (!$copied) {
+            return new WP_Error('yt2s_artifact_write', 'Downloaded media but failed to save artifact in uploads.');
+        }
+
+        $bytes = filesize($path);
+
+        if (false === $bytes || 0 === (int) $bytes) {
+            @unlink($path);
+            return new WP_Error('yt2s_artifact_empty', 'Downloaded file is empty.');
         }
 
         $url = trailingslashit((string) $upload['baseurl']) . self::ARTIFACT_DIR . '/' . rawurlencode($filename);
@@ -373,20 +397,20 @@ final class YT2S_Rest_Controller {
         ];
     }
 
-    private static function build_binary_artifact(string $job_id, array $job, string $ext): string {
-        $source = (string) ($job['source_url'] ?? '');
-        $selected = (string) ($job['selected_format_label'] ?? 'Unknown');
-        $meta = "\nYT2S GENERATED FILE\nJob: {$job_id}\nFormat: {$selected}\nSource: {$source}\nGenerated: " . gmdate('c') . "\n";
-
-        if ('mp4' === $ext || 'webm' === $ext) {
-            return "\x00\x00\x00\x20ftypisom\x00\x00\x02\x00isomiso2mp41avc1\x00\x00\x00\x08mdat" . random_bytes(96) . $meta;
+    private static function is_direct_media_url(string $source_url): bool {
+        if ('' === $source_url || !wp_http_validate_url($source_url)) {
+            return false;
         }
 
-        if ('mp3' === $ext) {
-            return "ID3\x03\x00\x00\x00\x00\x00\x21TIT2\x00\x00\x00\x0F\x00\x00YT2S Artifact" . random_bytes(96) . $meta;
+        $path = (string) wp_parse_url($source_url, PHP_URL_PATH);
+        $ext = strtolower((string) pathinfo($path, PATHINFO_EXTENSION));
+
+        if ('' === $ext) {
+            return false;
         }
 
-        return "YT2S Artifact\n" . $meta;
+        $allowed = ['mp4', 'webm', 'mp3', 'm4a', 'aac', 'wav', 'ogg', 'mov', 'mkv'];
+        return in_array($ext, $allowed, true);
     }
 
     private function demo_formats(): array {

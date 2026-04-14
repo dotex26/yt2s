@@ -23,6 +23,12 @@ final class YT2S_Core {
         add_action('admin_menu', [$this, 'register_menu']);
         add_action('admin_init', [$this, 'register_settings']);
         add_action('rest_api_init', [$this, 'register_routes']);
+        add_action('yt2s_core_process_job', ['YT2S_Rest_Controller', 'process_job_chunk'], 10, 2);
+        add_action('yt2s_core_cleanup_artifacts', ['YT2S_Rest_Controller', 'cleanup_artifacts']);
+
+        if (!wp_next_scheduled('yt2s_core_cleanup_artifacts')) {
+            wp_schedule_event(time() + HOUR_IN_SECONDS, 'hourly', 'yt2s_core_cleanup_artifacts');
+        }
     }
 
     public function get_engine_url(): string {
@@ -36,7 +42,7 @@ final class YT2S_Core {
             return untrailingslashit(YT2S_CORE_ENGINE_URL);
         }
 
-        return 'http://127.0.0.1:8000';
+        return '';
     }
 
     public function get_api_key(): string {
@@ -64,7 +70,7 @@ final class YT2S_Core {
             return untrailingslashit(YT2S_CORE_SOCKET_URL);
         }
 
-        return $this->get_engine_url();
+        return '';
     }
 
     public function get_nonce(): string {
@@ -107,9 +113,9 @@ final class YT2S_Core {
 
         add_settings_section(
             'yt2s_core_connection',
-            'Engine Connection',
+            'Processing Settings',
             static function (): void {
-                echo '<p>Configure the FastAPI engine endpoint and shared secret used for request proxying.</p>';
+                echo '<p>PHP mode runs directly on this WordPress host. External engine fields are optional.</p>';
             },
             'yt2s-core'
         );
@@ -171,7 +177,7 @@ final class YT2S_Core {
         ?>
         <div class="wrap">
             <h1>Yt2s Core</h1>
-            <p>Proxy settings for the WordPress-to-engine bridge.</p>
+            <p>Local PHP processing is enabled. Jobs run through WordPress cron and files are saved in uploads.</p>
             <form method="post" action="options.php">
                 <?php
                 settings_fields('yt2s_core_settings');

@@ -69,6 +69,36 @@
         return value;
     };
 
+    const isLikelyWatchPageUrl = (value) => {
+        if (!value || typeof value !== 'string') {
+            return false;
+        }
+
+        try {
+            const parsed = new URL(value);
+            const host = (parsed.hostname || '').toLowerCase();
+            const path = (parsed.pathname || '').toLowerCase();
+            const hasWatchParam = parsed.searchParams.has('v') || parsed.searchParams.has('list');
+            const mediaExtPattern = /\.(mp4|webm|mp3|m4a|aac|wav|ogg|mov|mkv)(\?|$)/i;
+
+            if (mediaExtPattern.test(value)) {
+                return false;
+            }
+
+            if (host.includes('youtube.com') || host.includes('youtu.be')) {
+                return true;
+            }
+
+            if (path.includes('/watch') || path.includes('/video') || hasWatchParam) {
+                return true;
+            }
+        } catch (error) {
+            return false;
+        }
+
+        return false;
+    };
+
     const setLoading = (loading) => {
         skeleton.classList.toggle('hidden', !loading);
         form.querySelector('button[type="submit"]').disabled = loading;
@@ -272,6 +302,21 @@
 
         const sourceUrl = sourceInput.value.trim();
         if (!sourceUrl) {
+            return;
+        }
+
+        if (isLikelyWatchPageUrl(sourceUrl)) {
+            setStatus(
+                0,
+                'This server mode accepts direct media file links only (.mp4, .mp3, .webm). Watch-page URLs are not supported on shared hosting without external tools.'
+            );
+            formatsGrid.innerHTML = '';
+            renderJobMeta({
+                status: 'failed',
+                message: 'Watch-page URL blocked before processing.',
+                selected_format_label: 'None',
+                result_url: null,
+            });
             return;
         }
 

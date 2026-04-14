@@ -1,0 +1,45 @@
+# Ignore OS files
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# WordPress
+wp-config.php
+wp-config-local.php
+wp-content/uploads/
+wp-content/debug.log
+wp-content/cache/
+
+# Node
+node_modules/
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+env/
+venv/
+pip-log.txt
+
+# Docker
+.env
+
+# Dist (for local testing)
+# dist/ - keep this for releases
+
+# Composer
+vendor/
+composer.lock
+
+# Sensitive
+.env.local
+.env.*.local
+secrets.txt

@@ -1,0 +1,49 @@
+.glass-panel {
+    backdrop-filter: blur(22px);
+    background: linear-gradient(180deg, rgba(8, 15, 34, 0.86), rgba(4, 8, 20, 0.72));
+}
+
+.search-shell {
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.search-shell:focus-within {
+    transform: translateY(-1px);
+    border-color: rgba(125, 211, 252, 0.38);
+    box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.22), 0 24px 80px rgba(2, 6, 23, 0.66);
+}
+
+.format-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(2, 6, 23, 0.55);
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.format-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(125, 211, 252, 0.4);
+}
+
+.format-card.is-active {
+    border-color: rgba(125, 211, 252, 0.7);
+    background: rgba(8, 24, 46, 0.9);
+}
+
+.skeleton-line,
+.skeleton-card {
+    background: linear-gradient(90deg, rgba(30, 41, 59, 0.2) 0%, rgba(71, 85, 105, 0.54) 50%, rgba(30, 41, 59, 0.2) 100%);
+    background-size: 220% 100%;
+    animation: shimmer 1.3s infinite linear;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: -220% 0;
+    }
+}

@@ -1,0 +1,32 @@
+/*
+Theme Name: Yt2s.cc Application V2
+Theme URI: https://yt2s.cc
+Author: Copilot
+Description: High-contrast custom theme for the Yt2s downloader experience.
+Version: 0.1.0
+Text Domain: yt2s-cc-v2
+*/
+
+:root {
+    color-scheme: dark;
+}
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(circle at top left, rgba(0, 153, 255, 0.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(255, 122, 89, 0.14), transparent 28%),
+        linear-gradient(180deg, #050816 0%, #070b18 42%, #0b1021 100%);
+    color: #e8eefc;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+}
+
+a {
+    color: #7dd3fc;
+}
+
+::selection {
+    background: rgba(125, 211, 252, 0.24);
+}
+

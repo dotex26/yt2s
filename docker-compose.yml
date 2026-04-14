@@ -1,0 +1,51 @@
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${WORDPRESS_DB_NAME:-yt2s}
+      MARIADB_USER: ${WORDPRESS_DB_USER:-yt2s}
+      MARIADB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-yt2s_password}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  engine:
+    build:
+      context: ./engine
+    restart: unless-stopped
+    environment:
+      YT2S_API_KEY: ${YT2S_API_KEY:-change-me}
+      YT2S_CORS_ORIGINS: ${YT2S_CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}
+    ports:
+      - "8000:8000"
+
+  wordpress:
+    image: wordpress:6.7.1-php8.2-apache
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      engine:
+        condition: service_started
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-yt2s}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-yt2s}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-yt2s_password}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('YT2S_CORE_ENGINE_URL', 'http://engine:8000');
+        define('YT2S_CORE_SOCKET_URL', 'http://engine:8000');
+        define('YT2S_CORE_API_KEY', '${YT2S_API_KEY:-change-me}');
+    volumes:
+      - ./wp-content:/var/www/html/wp-content
+
+volumes:
+  db_data:
